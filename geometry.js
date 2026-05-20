@@ -1,5 +1,5 @@
 /**
- * geometry.js - Complex Procedural Structures
+ * geometry.js
  */
 
 const Geometry = {
