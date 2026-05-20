@@ -14,8 +14,8 @@ uniform vec2 iResolution;
 uniform float iTime;
 
 #define FAR 850.
-#define SUN_COLOUR vec3(0.6, 0.95, 1.0)   // Bir az daha işıqlı və təmiz sualtı günəş işığı
-#define FOG_COLOUR vec3(0.06, 0.14, 0.26)  // Qaranlığı azaltmaq üçün azca aydınladılmış su dumanı
+#define SUN_COLOUR vec3(0.6, 0.95, 1.0)
+#define FOG_COLOUR vec3(0.06, 0.14, 0.26)
 
 vec3 sunLight;
 float fishMarker = 0.0;
@@ -102,15 +102,13 @@ float map(in vec3 p) {
 
     for(int i = 0; i < 6; i++) {
         vec3 envFishP = tunnelP;
-        float segmentZ = floor(envFishP.z / 70.0) * 70.0; // Hüceyrə aralığı sıxlaşdırıldı (çox balıq üçün)
+        float segmentZ = floor(envFishP.z / 70.0) * 70.0;
         envFishP.z = mod(envFishP.z, 70.0) - 35.0;
-
-        // Balıqları ətrafa, mağaranın boşluqlarına yayırıq
         envFishP.x += offsetsX[i] + sin(segmentZ + iTime * 1.2) * 2.5;
         envFishP.y += offsetsY[i] + cos(segmentZ * 0.5 + iTime) * 2.0;
         envFishP.z += positions[i];
 
-        float dEnvFish = sdFish(envFishP, 0.8); // Köməkçi balıqlar
+        float dEnvFish = sdFish(envFishP, 0.8);
         if(dEnvFish < finalD) {
             finalD = dEnvFish;
             fishMarker = 2.0;
@@ -164,7 +162,7 @@ float shadow(in vec3 ro, in vec3 rd) {
 }
 
 vec3 lighting(in vec3 pos, in vec3 normal, in vec3 eyeDir, float currentFish) {
-    vec3 matColor = vec3(0.18, 0.26, 0.32); // Sualtı qayaların o sən bəyəndiyin orijinal rəngi
+    vec3 matColor = vec3(0.18, 0.26, 0.32);
     
     if(normal.y > 0.5) {
         matColor = mix(matColor, vec3(0.3, 0.45, 0.55), smoothstep(0.5, 0.9, normal.y)); 
@@ -172,10 +170,10 @@ vec3 lighting(in vec3 pos, in vec3 normal, in vec3 eyeDir, float currentFish) {
 
     if(currentFish > 0.5) {
         if(currentFish < 1.5) {
-            matColor = vec3(0.25, 0.65, 0.85); // Əsas balıq
+            matColor = vec3(0.25, 0.65, 0.85);
             if(sin(pos.z * 5.0) > 0.1) matColor = vec3(0.5, 0.8, 0.95); 
         } else {
-            matColor = vec3(0.2, 0.5, 0.7); // Ətrafdakı digər balıqlar
+            matColor = vec3(0.2, 0.5, 0.7);
         }
     }
 
@@ -185,9 +183,7 @@ vec3 lighting(in vec3 pos, in vec3 normal, in vec3 eyeDir, float currentFish) {
 
     float caustic = getCaustics(pos);
     col += caustic * SUN_COLOUR * max(0.0, normal.y) * sh;
-
-    // Səhnə çox qaranlıq olmasın deyə ambient işığı azca gücləndirdik (.35)
-    col += matColor * abs(normal.y * .35);
+    col += matColor * abs(normal.y * .55);
 
     vec3 r = reflect(eyeDir, normal);
     float spec = pow(max(dot(sunLight, r), 0.0), 32.0);
@@ -222,7 +218,7 @@ void main() {
         vec3 p = camPos + dhit * dir;
         vec3 nor = getNormal(p);
         vec3 sceneColor = lighting(p, nor, dir, activeObject);
-        col = mix(sky, sceneColor, exp(-dhit * .0025)); // Aydınlığı qorumaq üçün duman absorbsiyası azaldıldı
+        col = mix(sky, sceneColor, exp(-dhit * .0025));
     } else {
         col = sky;
     }
