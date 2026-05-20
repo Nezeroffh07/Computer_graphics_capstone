@@ -1,4 +1,4 @@
-// shaders.js - Tam Sualtı Optikası və Yayılmış Balıq Sürüləri (Raymarching)
+// shaders.js 
 
 const vertexShaderSource = `#version 300 es
 in vec2 a_position;
@@ -20,7 +20,6 @@ uniform float iTime;
 vec3 sunLight;
 float fishMarker = 0.0;
 
-// Shader daxili splayn əyrisi
 vec3 cameraPath(float z) {
     return vec3(
         100.2 * sin(z * .0045) + 90. * cos(z * .012), 
@@ -53,7 +52,6 @@ float sMin(float a, float b, float k) {
     return mix(b, a, h) - k * h * (1.0 - h);
 }
 
-// REALİSTİK BALIQ GEOMETRİYASI
 float sdFish(vec3 p, float scaleModifier) {
     float wave = sin(p.z * 2.2 - iTime * 9.5) * 0.22;
     float lFactor = smoothstep(0.4, -2.0, p.z);
@@ -75,7 +73,6 @@ float sdFish(vec3 p, float scaleModifier) {
 }
 
 float map(in vec3 p) {
-    // 1. Mağara relyefi
     float h = dot(sin(p * .0173), cos(p.zxy * .0191)) * 30.;
     float d = h + p.y * .2 + 15.0;
     
@@ -89,7 +86,6 @@ float map(in vec3 p) {
 
     float gTime = (iTime + 110.) * 32.;
 
-    // 2. ƏSAS TƏQİB OLUNAN BALIQ (Kameranın önündə)
     vec3 mainFishPos = p;
     mainFishPos.xy -= cameraPath(gTime + 26.0).xy;
     mainFishPos.z -= (gTime + 26.0);
@@ -100,7 +96,6 @@ float map(in vec3 p) {
         fishMarker = 1.0;
     }
 
-    // 3. ƏTRAFA DAHA SIX VƏ ÇOX YAYILMIŞ BALIQLAR (6 fərqli mövqe ofseti)
     float positions[6] = float[](15.0, 45.0, -20.0, -50.0, 30.0, -10.0);
     float offsetsX[6] = float[](6.0, -7.0, 5.5, -4.0, -5.0, 7.0);
     float offsetsY[6] = float[](-4.0, 5.0, -3.0, 2.5, -2.0, 4.0);
@@ -149,8 +144,6 @@ float marchScene(in vec3 rO, in vec3 rD, vec2 co) {
     }
     return t;
 }
-
-// PROCEDURAL SUALTI İŞIQ DALĞALARI (Caustics Effect)
 float getCaustics(vec3 p) {
     vec2 uv = p.xz * 0.07;
     uv += iTime * 0.12;
@@ -193,7 +186,6 @@ vec3 lighting(in vec3 pos, in vec3 normal, in vec3 eyeDir, float currentFish) {
     float caustic = getCaustics(pos);
     col += caustic * SUN_COLOUR * max(0.0, normal.y) * sh;
 
-    // --- AYDINLIQ ARTIMI ---
     // Səhnə çox qaranlıq olmasın deyə ambient işığı azca gücləndirdik (.35)
     col += matColor * abs(normal.y * .35);
 
@@ -207,7 +199,6 @@ vec3 lighting(in vec3 pos, in vec3 normal, in vec3 eyeDir, float currentFish) {
 void main() {
     vec2 uv = (-iResolution.xy + 2.0 * gl_FragCoord.xy) / iResolution.y;
 
-    // --- HƏQİQİ SUALTI OPTİK DEFORMASİYASI (Water Wiggle) ---
     uv.x += sin(uv.y * 12.0 + iTime * 2.5) * 0.008;
     uv.y += cos(uv.x * 10.0 + iTime * 2.0) * 0.006;
 
@@ -236,20 +227,15 @@ void main() {
         col = sky;
     }
 
-    // --- BURA ƏLAVƏ OLUNDU: GÜNƏŞİN ARADA BİR GÖRÜNMƏSİ ---
-    // Heç bir rəngi dəyişmədən, kamera günəş bucağına baxanda parlaq dairə (işıq mənbəyi) görünür
     float sunDot = max(dot(sunLight, dir), 0.0);
     col += pow(sunDot, 120.0) * SUN_COLOUR * 2.0;
 
-    // Su daxili yüngül planktonlar
     vec2 pData = uv * 7.0;
     float pHash = hash12(floor(pData) + floor(iTime * 0.12));
     if (pHash > 0.994) {
         vec2 pOffset = fract(pData) - 0.5;
         col += vec3(0.5, 0.85, 1.0) * (0.002 / length(pOffset));
     }
-
-    // Kinematik rəng və sualtı vizual filtri
     col = pow(col, vec3(1.3, 1.5, 1.6)) * 1.4;
     vec2 xy = gl_FragCoord.xy / iResolution.xy;
     col *= pow(16.0 * xy.x * xy.y * (1.0 - xy.x) * (1.0 - xy.y), 0.25);
