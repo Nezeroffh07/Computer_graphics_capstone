@@ -1,4 +1,4 @@
-// main.js - WebGL İdarəetmə və Render Dövrü
+// main.js 
 
 function createShader(gl, type, source) {
     const shader = gl.createShader(type);
@@ -33,7 +33,6 @@ function initWebGL() {
         return;
     }
 
-    // Full-screen Quad Vertexləri (VAO/VBO istifadəsi)
     const positions = new Float32Array([
         -1.0, -1.0,  1.0, -1.0, -1.0,  1.0,
         -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
