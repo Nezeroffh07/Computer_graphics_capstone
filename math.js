@@ -1,7 +1,6 @@
-// math.js - Prosedural Riyaziyyat Modulu
+// math.js 
 
 const MathUtils = {
-    // Splayn hərəkət trayektoriyası (Catmull-Rom məntiqli əyri)
     cameraPath: function(z) {
         return {
             x: 100.2 * Math.sin(z * 0.0045) + 90.0 * Math.cos(z * 0.012),
